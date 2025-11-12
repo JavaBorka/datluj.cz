@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Wordbox from '../Wordbox';
 import wordList from '../../word-list';
 import './style.css';
@@ -20,13 +20,41 @@ const generateWord = (size: number) => {
 };
 
 const Stage = () => {
-  const [words] = useState<string[]>(['jahoda']);
+  const [words, setWords] = useState<string[]>(['jahoda', 'ostružina', 'borůvka'])
+  const [mistakes, setMistakes] = useState<number>(0)
+  const [isShaking, setIsShaking] = useState<boolean>(false)
+
+  const handleFinish = () => {
+    const newWord: any = generateWord(6)
+    setWords(prev => [...prev.slice(1), newWord])
+  }
+
+  const handleMistake = () => {
+    setMistakes(mistakes + 1)
+    setIsShaking(true)
+  }
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsShaking(false), 300)
+
+    return () => {
+      clearTimeout(timer)
+    }
+  }, [isShaking])
 
   return (
-    <div className="stage">
-      <div className="stage__mistakes">Chyb: 0</div>
+    <div className={`stage ${isShaking ? "shake" : ""}`}>
+      <div className="stage__mistakes">Chyb: {mistakes}</div>
       <div className="stage__words">
-        {words.map((word) => <Wordbox word={word} key={word} />)}
+        {words.map((word, index) => (
+          <Wordbox
+            word={word}
+            key={word}
+            onFinish={handleFinish}
+            active={index === 0}
+            onMistake={handleMistake}
+          />
+        ))}
       </div>
     </div>
   );
